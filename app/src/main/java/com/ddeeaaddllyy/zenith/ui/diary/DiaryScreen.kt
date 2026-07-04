@@ -13,11 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ddeeaaddllyy.zenith.domain.model.FoodEntry
 import com.ddeeaaddllyy.zenith.ui.common.DaySelector
+import com.ddeeaaddllyy.zenith.ui.common.SwipeToDeleteItem
 import com.ddeeaaddllyy.zenith.ui.common.ZenithCard
 import com.ddeeaaddllyy.zenith.ui.common.formatKcal
 
@@ -77,7 +76,8 @@ fun DiaryScreen(viewModel: DiaryViewModel) {
                 DaySelector(
                     selectedDate = state.selectedDate,
                     onPreviousDay = viewModel::onPreviousDay,
-                    onNextDay = viewModel::onNextDay
+                    onNextDay = viewModel::onNextDay,
+                    onDateSelected = viewModel::selectDate
                 )
             }
             item { DailySummaryCard(state) }
@@ -146,35 +146,33 @@ private fun DailySummaryCard(state: DiaryUiState) {
 
 @Composable
 private fun FoodEntryRow(entry: FoodEntry, onDelete: () -> Unit) {
-    ZenithCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                val macros = listOfNotNull(
-                    entry.proteinG?.let { "Б: ${it.formatMacro()}г" },
-                    entry.fatG?.let { "Ж: ${it.formatMacro()}г" },
-                    entry.carbsG?.let { "У: ${it.formatMacro()}г" }
-                ).joinToString("  ")
-                Text(
-                    text = entry.calories.formatKcal() + if (macros.isNotEmpty()) "  •  $macros" else "",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Удалить",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+    SwipeToDeleteItem(
+        confirmText = "«${entry.name}» будет удалено безвозвратно.",
+        onDelete = onDelete
+    ) {
+        ZenithCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = entry.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    val macros = listOfNotNull(
+                        entry.proteinG?.let { "Б: ${it.formatMacro()}г" },
+                        entry.fatG?.let { "Ж: ${it.formatMacro()}г" },
+                        entry.carbsG?.let { "У: ${it.formatMacro()}г" }
+                    ).joinToString("  ")
+                    Text(
+                        text = entry.calories.formatKcal() + if (macros.isNotEmpty()) "  •  $macros" else "",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

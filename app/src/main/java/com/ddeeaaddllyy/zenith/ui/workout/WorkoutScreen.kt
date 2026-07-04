@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,13 +17,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -46,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutEntry
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutType
 import com.ddeeaaddllyy.zenith.ui.common.DaySelector
+import com.ddeeaaddllyy.zenith.ui.common.SwipeToDeleteItem
 import com.ddeeaaddllyy.zenith.ui.common.ZenithCard
 import com.ddeeaaddllyy.zenith.ui.common.formatKcal
 
@@ -85,7 +83,8 @@ fun WorkoutScreen(viewModel: WorkoutViewModel) {
                 DaySelector(
                     selectedDate = state.selectedDate,
                     onPreviousDay = viewModel::onPreviousDay,
-                    onNextDay = viewModel::onNextDay
+                    onNextDay = viewModel::onNextDay,
+                    onDateSelected = viewModel::selectDate
                 )
             }
             item { WorkoutSummaryCard(state) }
@@ -150,37 +149,35 @@ private fun WorkoutSummaryCard(state: WorkoutUiState) {
 
 @Composable
 private fun WorkoutEntryRow(entry: WorkoutEntry, onDelete: () -> Unit) {
-    ZenithCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.type.label,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "${entry.durationMinutes} мин  •  ${entry.caloriesBurned.formatKcal()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (!entry.note.isNullOrBlank()) {
+    SwipeToDeleteItem(
+        confirmText = "Тренировка «${entry.type.label}» будет удалена безвозвратно.",
+        onDelete = onDelete
+    ) {
+        ZenithCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = entry.note,
+                        text = entry.type.label,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "${entry.durationMinutes} мин  •  ${entry.caloriesBurned.formatKcal()}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (!entry.note.isNullOrBlank()) {
+                        Text(
+                            text = entry.note,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Удалить",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }
