@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.unit.dp
 
@@ -85,6 +86,33 @@ fun WeightLineChart(
         }
         offsets.forEach { offset ->
             drawCircle(color = dotColor, radius = 4.dp.toPx(), center = offset)
+        }
+    }
+}
+
+@Composable
+fun MonthlyWorkoutsChart(
+    data: List<MonthlyWorkoutStat>,
+    barColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val maxValue = (data.maxOfOrNull { it.count } ?: 0).coerceAtLeast(1)
+
+    Canvas(modifier = modifier.fillMaxWidth().height(100.dp)) {
+        val barCount = data.size
+        if (barCount == 0) return@Canvas
+        val gap = 10.dp.toPx()
+        val barWidth = (size.width - gap * (barCount - 1)) / barCount
+
+        data.forEachIndexed { index, month ->
+            val barHeight = (month.count.toFloat() / maxValue) * size.height
+            val left = index * (barWidth + gap)
+            drawRoundRect(
+                color = barColor,
+                topLeft = Offset(left, size.height - barHeight),
+                size = androidx.compose.ui.geometry.Size(barWidth, barHeight.coerceAtLeast(3f)),
+                cornerRadius = CornerRadius(6f, 6f)
+            )
         }
     }
 }

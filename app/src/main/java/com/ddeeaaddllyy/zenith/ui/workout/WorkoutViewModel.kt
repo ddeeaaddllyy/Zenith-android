@@ -53,6 +53,12 @@ class WorkoutViewModel(
         }
     }
 
+    fun selectDate(date: LocalDate) {
+        if (!date.isAfter(LocalDate.now())) {
+            selectedDate.value = date
+        }
+    }
+
     fun addEntry(type: WorkoutType, durationMinutes: Int, caloriesBurned: Int, note: String?) {
         viewModelScope.launch {
             workoutRepository.addEntry(

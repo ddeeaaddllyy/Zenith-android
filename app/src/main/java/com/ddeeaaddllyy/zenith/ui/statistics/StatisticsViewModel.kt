@@ -14,9 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
+import java.time.YearMonth
 
 data class DayCalories(val date: LocalDate, val calories: Int)
 data class WeightPoint(val date: LocalDate, val weightKg: Double)
+data class MonthlyWorkoutStat(val month: YearMonth, val count: Int)
 
 data class StatisticsUiState(
     val isLoading: Boolean = true,
@@ -32,7 +34,8 @@ data class StatisticsUiState(
     val currentWeightKg: Double = 0.0,
     val targetWeightKg: Double = 0.0,
     val weightChangeKg: Double = 0.0,
-    val weightHistory: List<WeightPoint> = emptyList()
+    val weightHistory: List<WeightPoint> = emptyList(),
+    val monthlyWorkoutStats: List<MonthlyWorkoutStat> = emptyList()
 )
 
 class StatisticsViewModel(
@@ -44,13 +47,15 @@ class StatisticsViewModel(
 
     private val today = LocalDate.now()
     private val weekStart = today.minusDays(6)
+    private val monthsWindowStart = YearMonth.from(today).minusMonths(5).atDay(1)
 
     val uiState: StateFlow<StatisticsUiState> = combine(
         userRepository.profile,
         nutritionRepository.entriesBetween(weekStart, today),
         workoutRepository.entriesBetween(weekStart, today),
-        weightRepository.entries
-    ) { profile, foodEntries, workoutEntries, weightEntries ->
+        weightRepository.entries,
+        workoutRepository.entriesBetween(monthsWindowStart, today)
+    ) { profile, foodEntries, workoutEntries, weightEntries, monthlyWorkoutEntries ->
         if (profile == null) {
             StatisticsUiState(isLoading = true)
         } else {
@@ -60,6 +65,12 @@ class StatisticsViewModel(
                 DayCalories(date, total)
             }
             val todaysWorkouts = workoutEntries.filter { it.date == today }
+            val startMonth = YearMonth.from(monthsWindowStart)
+            val monthlyStats = (0..5).map { offset ->
+                val month = startMonth.plusMonths(offset.toLong())
+                val count = monthlyWorkoutEntries.count { YearMonth.from(it.date) == month }
+                MonthlyWorkoutStat(month, count)
+            }
 
             StatisticsUiState(
                 isLoading = false,
@@ -75,7 +86,8 @@ class StatisticsViewModel(
                 currentWeightKg = profile.currentWeightKg,
                 targetWeightKg = profile.targetWeightKg,
                 weightChangeKg = profile.weightChangeKg,
-                weightHistory = weightEntries.map { WeightPoint(it.date, it.weightKg) }.takeLast(14)
+                weightHistory = weightEntries.map { WeightPoint(it.date, it.weightKg) }.takeLast(14),
+                monthlyWorkoutStats = monthlyStats
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsUiState())

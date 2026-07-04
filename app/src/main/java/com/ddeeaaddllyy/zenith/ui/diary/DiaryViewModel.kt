@@ -60,6 +60,12 @@ class DiaryViewModel(
         }
     }
 
+    fun selectDate(date: LocalDate) {
+        if (!date.isAfter(LocalDate.now())) {
+            selectedDate.value = date
+        }
+    }
+
     fun addEntry(name: String, calories: Int, proteinG: Double?, fatG: Double?, carbsG: Double?) {
         viewModelScope.launch {
             nutritionRepository.addEntry(

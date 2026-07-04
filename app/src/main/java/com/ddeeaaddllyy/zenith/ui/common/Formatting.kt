@@ -1,6 +1,7 @@
 package com.ddeeaaddllyy.zenith.ui.common
 
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -8,6 +9,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private val dayMonthFormatter = DateTimeFormatter.ofPattern("d MMMM", Locale("ru"))
+private val monthShortFormatter = DateTimeFormatter.ofPattern("LLL", Locale("ru"))
 
 fun LocalDate.toFriendlyLabel(): String {
     val today = LocalDate.now()
@@ -47,3 +49,6 @@ fun Double.formatWeightDelta(): String {
 }
 
 fun Int.formatKcal(): String = "$this ккал"
+
+fun YearMonth.monthShortLabel(): String =
+    format(monthShortFormatter).replaceFirstChar { it.uppercase() }

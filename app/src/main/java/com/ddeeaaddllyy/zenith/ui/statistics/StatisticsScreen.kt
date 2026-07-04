@@ -26,7 +26,10 @@ import com.ddeeaaddllyy.zenith.ui.common.ZenithCard
 import com.ddeeaaddllyy.zenith.ui.common.formatKcal
 import com.ddeeaaddllyy.zenith.ui.common.formatWeight
 import com.ddeeaaddllyy.zenith.ui.common.formatWeightDelta
+import com.ddeeaaddllyy.zenith.ui.common.monthShortLabel
 import com.ddeeaaddllyy.zenith.ui.common.weekdayShort
+import com.ddeeaaddllyy.zenith.ui.theme.AmberAccent
+import com.ddeeaaddllyy.zenith.ui.theme.AmberAccentContainer
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel) {
@@ -55,6 +58,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
             item { TodayCaloriesCard(state) }
             item { TodayWorkoutCard(state) }
             item { WeekCard(state) }
+            item { MonthlyWorkoutsCard(state) }
             item { WeightCard(state) }
         }
     }
@@ -146,6 +150,30 @@ private fun WeekCard(state: StatisticsUiState) {
         ) {
             StatItem(label = "Тренировок", value = "${state.workoutsThisWeek}")
             StatItem(label = "Сожжено ккал", value = "${state.caloriesBurnedThisWeek}")
+        }
+    }
+}
+
+@Composable
+private fun MonthlyWorkoutsCard(state: StatisticsUiState) {
+    ZenithCard(containerColor = AmberAccentContainer) {
+        SectionLabel("Тренировки по месяцам", color = AmberAccent)
+        val totalCount = state.monthlyWorkoutStats.sumOf { it.count }
+        Text(
+            text = "$totalCount за ${state.monthlyWorkoutStats.size} мес.",
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            color = AmberAccent
+        )
+        MonthlyWorkoutsChart(data = state.monthlyWorkoutStats, barColor = AmberAccent)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            state.monthlyWorkoutStats.forEach { month ->
+                Text(
+                    text = month.month.monthShortLabel(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
