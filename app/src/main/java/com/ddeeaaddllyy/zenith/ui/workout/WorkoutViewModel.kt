@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.ddeeaaddllyy.zenith.analytics.Analytic
 import com.ddeeaaddllyy.zenith.di.AppContainer
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutEntry
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutType
@@ -71,6 +72,8 @@ class WorkoutViewModel(
                 )
             )
         }
+
+        Analytic.sendWorkoutAnalytic()
     }
 
     fun deleteEntry(entry: WorkoutEntry) {

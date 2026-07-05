@@ -1,6 +1,5 @@
 package com.ddeeaaddllyy.zenith.ui.workout
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +40,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.ddeeaaddllyy.zenith.analytics.Analytic
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutEntry
 import com.ddeeaaddllyy.zenith.domain.model.WorkoutType
 import com.ddeeaaddllyy.zenith.ui.common.DaySelector
@@ -113,8 +111,6 @@ fun WorkoutScreen(viewModel: WorkoutViewModel) {
                 onConfirm = { type, duration, calories, note ->
                     viewModel.addEntry(type, duration, calories, note)
                     showAddDialog = false
-
-                    Analytic.sendWorkoutAnalytic()
                 }
             )
         }

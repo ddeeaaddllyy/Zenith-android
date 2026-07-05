@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.ddeeaaddllyy.zenith.analytics.Analytic
 import com.ddeeaaddllyy.zenith.di.AppContainer
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
 import com.ddeeaaddllyy.zenith.domain.model.Gender
@@ -61,6 +62,8 @@ class OnboardingViewModel(
         val height = state.heightCm.toInt()
         val weight = state.weightKg.toDouble()
         val targetWeight = state.targetWeightKg.toDouble()
+
+        Analytic.sendGenderAnalytics(state.gender)
 
         _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {

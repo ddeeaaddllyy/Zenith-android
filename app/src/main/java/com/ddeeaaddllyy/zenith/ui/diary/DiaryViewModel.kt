@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.ddeeaaddllyy.zenith.analytics.Analytic
 import com.ddeeaaddllyy.zenith.di.AppContainer
 import com.ddeeaaddllyy.zenith.domain.model.FoodEntry
 import com.ddeeaaddllyy.zenith.domain.repository.NutritionRepository
@@ -79,6 +80,8 @@ class DiaryViewModel(
                 )
             )
         }
+
+        Analytic.sendDiaryAnalytics()
     }
 
     fun deleteEntry(entry: FoodEntry) {

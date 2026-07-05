@@ -181,7 +181,7 @@ private fun WeightCard(profile: UserProfile, onUpdateWeightClick: () -> Unit) {
                 )
             }
             Text(
-                text = "${profile.weightChangeKg.formatWeightDelta()}",
+                text = profile.weightChangeKg.formatWeightDelta(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
