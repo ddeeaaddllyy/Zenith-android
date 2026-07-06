@@ -14,4 +14,7 @@ interface UserProfileDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(profile: UserProfileEntity)
+
+    @Query("UPDATE user_profile SET theme = :theme WHERE id = 1")
+    suspend fun updateTheme(theme: String)
 }

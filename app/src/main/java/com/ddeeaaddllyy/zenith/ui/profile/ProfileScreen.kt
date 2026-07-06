@@ -16,10 +16,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,24 +49,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
+import com.ddeeaaddllyy.zenith.domain.model.AppTheme
 import com.ddeeaaddllyy.zenith.domain.model.Goal
+import com.ddeeaaddllyy.zenith.domain.model.NedovolenSession
 import com.ddeeaaddllyy.zenith.domain.model.UserProfile
+import com.ddeeaaddllyy.zenith.ui.common.AGE_MAX_LENGTH
+import com.ddeeaaddllyy.zenith.ui.common.HEIGHT_MAX_LENGTH
+import com.ddeeaaddllyy.zenith.ui.common.NAME_MAX_LENGTH
 import com.ddeeaaddllyy.zenith.ui.common.SectionLabel
+import com.ddeeaaddllyy.zenith.ui.common.WEIGHT_MAX_LENGTH
 import com.ddeeaaddllyy.zenith.ui.common.ZenithCard
 import com.ddeeaaddllyy.zenith.ui.common.formatKcal
 import com.ddeeaaddllyy.zenith.ui.common.formatWeight
 import com.ddeeaaddllyy.zenith.ui.common.formatWeightDelta
+import com.ddeeaaddllyy.zenith.ui.theme.colorSchemeFor
 
 @Composable
 fun ProfileScreen(viewModel: ProfileViewModel) {
     val profile by viewModel.profile.collectAsState()
+    val session by viewModel.session.collectAsState()
     var showWeightDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         val currentProfile = profile
@@ -77,8 +93,21 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
             ) {
                 item { ZenithBrandHeader() }
                 item { UserInfoCard(currentProfile, onEditClick = { showEditDialog = true }) }
+                item {
+                    NedovolenAccountCard(
+                        session = session,
+                        onLoginClick = { showLoginDialog = true },
+                        onLogoutClick = viewModel::logout
+                    )
+                }
                 item { WeightCard(currentProfile, onUpdateWeightClick = { showWeightDialog = true }) }
                 item { CalorieTargetCard(currentProfile) }
+                item {
+                    ThemePickerCard(
+                        selected = currentProfile.theme,
+                        onThemeSelected = viewModel::selectTheme
+                    )
+                }
             }
         }
     }
@@ -100,6 +129,16 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
             onConfirm = { name, age, height, targetWeight, activity, goal ->
                 viewModel.updateDetails(name, age, height, targetWeight, activity, goal)
                 showEditDialog = false
+            }
+        )
+    }
+
+    if (showLoginDialog) {
+        NedovolenLoginDialog(
+            onDismiss = { showLoginDialog = false },
+            onConfirm = { login ->
+                viewModel.login(login)
+                showLoginDialog = false
             }
         )
     }
@@ -156,6 +195,180 @@ private fun UserInfoCard(profile: UserProfile, onEditClick: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun NedovolenAccountCard(
+    session: NedovolenSession?,
+    onLoginClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
+    ZenithCard {
+        SectionLabel("Аккаунт Nedovolen")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = null,
+                    tint = if (session != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = session?.login ?: "Вы не вошли",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (session != null) "Единый аккаунт всех приложений" else "Войдите, чтобы не потерять прогресс",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+        if (session != null) {
+            OutlinedButton(
+                onClick = onLogoutClick,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Выйти")
+            }
+        } else {
+            Button(
+                onClick = onLoginClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Войти в Nedovolen")
+            }
+        }
+    }
+}
+
+@Composable
+private fun NedovolenLoginDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var login by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text("Вход в Nedovolen", color = MaterialTheme.colorScheme.onSurface) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Единая учётная запись для всех приложений разработчика. Сейчас вход сохраняется только на этом устройстве.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = login,
+                    onValueChange = { login = it },
+                    label = { Text("Логин") },
+                    singleLine = true,
+                    colors = dialogFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Пароль") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = dialogFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(login.trim()) },
+                enabled = login.isNotBlank() && password.isNotBlank()
+            ) {
+                Text("Войти", color = MaterialTheme.colorScheme.primary)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Отмена", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    )
+}
+
+@Composable
+private fun ThemePickerCard(selected: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
+    ZenithCard {
+        SectionLabel("Тема оформления")
+        AppTheme.entries.forEach { theme ->
+            ThemeRow(
+                theme = theme,
+                isSelected = theme == selected,
+                onClick = { onThemeSelected(theme) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeRow(theme: AppTheme, isSelected: Boolean, onClick: () -> Unit) {
+    val scheme = colorSchemeFor(theme)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(modifier = Modifier.size(36.dp)) {
+            ThemeSwatch(color = scheme.background, modifier = Modifier.weight(1f))
+            ThemeSwatch(color = scheme.primary, modifier = Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = theme.label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = theme.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = "Выбрана",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeSwatch(color: Color, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(10.dp))
+            .background(color)
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+    )
 }
 
 @Composable
@@ -231,7 +444,9 @@ private fun UpdateWeightDialog(onDismiss: () -> Unit, onConfirm: (Double) -> Uni
         text = {
             OutlinedTextField(
                 value = weight,
-                onValueChange = { value -> weight = value.filterIndexed { i, c -> c.isDigit() || (c == '.' && !value.take(i).contains('.')) } },
+                onValueChange = { value ->
+                    weight = value.filterIndexed { i, c -> c.isDigit() || (c == '.' && !value.take(i).contains('.')) }.take(WEIGHT_MAX_LENGTH)
+                },
                 label = { Text("Текущий вес, кг") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -279,7 +494,7 @@ private fun EditProfileDialog(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = { name = it.take(NAME_MAX_LENGTH) },
                     label = { Text("Имя") },
                     singleLine = true,
                     colors = dialogFieldColors(),
@@ -287,7 +502,7 @@ private fun EditProfileDialog(
                 )
                 OutlinedTextField(
                     value = age,
-                    onValueChange = { age = it.filter { c -> c.isDigit() } },
+                    onValueChange = { age = it.filter { c -> c.isDigit() }.take(AGE_MAX_LENGTH) },
                     label = { Text("Возраст") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -296,7 +511,7 @@ private fun EditProfileDialog(
                 )
                 OutlinedTextField(
                     value = height,
-                    onValueChange = { height = it.filter { c -> c.isDigit() } },
+                    onValueChange = { height = it.filter { c -> c.isDigit() }.take(HEIGHT_MAX_LENGTH) },
                     label = { Text("Рост, см") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -305,7 +520,9 @@ private fun EditProfileDialog(
                 )
                 OutlinedTextField(
                     value = targetWeight,
-                    onValueChange = { value -> targetWeight = value.filterIndexed { i, c -> c.isDigit() || (c == '.' && !value.take(i).contains('.')) } },
+                    onValueChange = { value ->
+                        targetWeight = value.filterIndexed { i, c -> c.isDigit() || (c == '.' && !value.take(i).contains('.')) }.take(WEIGHT_MAX_LENGTH)
+                    },
                     label = { Text("Целевой вес, кг") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -324,7 +541,7 @@ private fun EditProfileDialog(
                                 inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        ) { Text(g.label, style = MaterialTheme.typography.labelSmall) }
+                        ) { Text(g.shortLabel, style = MaterialTheme.typography.labelSmall, maxLines = 1) }
                     }
                 }
                 ActivityLevelDropdown(selected = activity, onSelected = { activity = it })

@@ -6,9 +6,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ddeeaaddllyy.zenith.di.AppContainer
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
+import com.ddeeaaddllyy.zenith.domain.model.AppTheme
 import com.ddeeaaddllyy.zenith.domain.model.Goal
+import com.ddeeaaddllyy.zenith.domain.model.NedovolenSession
 import com.ddeeaaddllyy.zenith.domain.model.UserProfile
 import com.ddeeaaddllyy.zenith.domain.model.WeightEntry
+import com.ddeeaaddllyy.zenith.domain.repository.NedovolenAccountRepository
 import com.ddeeaaddllyy.zenith.domain.repository.UserRepository
 import com.ddeeaaddllyy.zenith.domain.repository.WeightRepository
 import com.ddeeaaddllyy.zenith.domain.usecase.CalculateCalorieTargetUseCase
@@ -21,10 +24,14 @@ import java.time.LocalDate
 class ProfileViewModel(
     private val userRepository: UserRepository,
     private val weightRepository: WeightRepository,
+    private val nedovolenAccountRepository: NedovolenAccountRepository,
     private val calculateCalorieTarget: CalculateCalorieTargetUseCase
 ) : ViewModel() {
 
     val profile: StateFlow<UserProfile?> = userRepository.profile
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val session: StateFlow<NedovolenSession?> = nedovolenAccountRepository.session
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun updateWeight(newWeightKg: Double) {
@@ -77,12 +84,25 @@ class ProfileViewModel(
         }
     }
 
+    fun selectTheme(theme: AppTheme) {
+        viewModelScope.launch { userRepository.updateTheme(theme) }
+    }
+
+    fun login(login: String) {
+        viewModelScope.launch { nedovolenAccountRepository.login(login) }
+    }
+
+    fun logout() {
+        viewModelScope.launch { nedovolenAccountRepository.logout() }
+    }
+
     companion object {
         fun factory(container: AppContainer) = viewModelFactory {
             initializer {
                 ProfileViewModel(
                     container.userRepository,
                     container.weightRepository,
+                    container.nedovolenAccountRepository,
                     container.calculateCalorieTargetUseCase
                 )
             }

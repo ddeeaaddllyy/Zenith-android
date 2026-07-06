@@ -15,5 +15,6 @@ data class UserProfileEntity(
     val targetWeightKg: Double,
     val activityLevel: String,
     val goal: String,
-    val dailyCalorieTarget: Int
+    val dailyCalorieTarget: Int,
+    val theme: String = "CHOCOLATTE"
 )

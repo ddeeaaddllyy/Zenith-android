@@ -13,10 +13,10 @@ enum class ActivityLevel(val label: String, val shortLabel: String, val multipli
     VERY_ACTIVE("Очень высокая (спорт каждый день)", "Очень высокая", 1.9)
 }
 
-enum class Goal(val label: String) {
-    LOSE("Похудение"),
-    MAINTAIN("Поддержание веса"),
-    GAIN("Набор массы")
+enum class Goal(val label: String, val shortLabel: String) {
+    LOSE("Похудение", "Похудение"),
+    MAINTAIN("Поддержание веса", "Баланс"),
+    GAIN("Набор массы", "Набор массы")
 }
 
 data class UserProfile(
@@ -29,7 +29,8 @@ data class UserProfile(
     val targetWeightKg: Double,
     val activityLevel: ActivityLevel,
     val goal: Goal,
-    val dailyCalorieTarget: Int
+    val dailyCalorieTarget: Int,
+    val theme: AppTheme = AppTheme.CHOCOLATTE
 ) {
     val weightChangeKg: Double
         get() = currentWeightKg - startWeightKg
