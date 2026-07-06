@@ -1,5 +1,7 @@
 package com.ddeeaaddllyy.zenith.ui.diary
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -131,9 +133,10 @@ private fun DailySummaryCard(state: DiaryUiState) {
                 )
             }
         }
-        val progress = if (state.calorieTarget > 0) {
+        val targetProgress = if (state.calorieTarget > 0) {
             (state.totalCalories.toFloat() / state.calorieTarget).coerceIn(0f, 1f)
         } else 0f
+        val progress by animateFloatAsState(targetProgress, tween(500), label = "diaryProgress")
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier.fillMaxWidth(),
@@ -222,7 +225,7 @@ private fun AddFoodEntryDialog(
                     OutlinedTextField(
                         value = protein,
                         onValueChange = { protein = it },
-                        label = { Text("Белки") },
+                        label = { Text("Б, г") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = dialogFieldColors(),
@@ -231,7 +234,7 @@ private fun AddFoodEntryDialog(
                     OutlinedTextField(
                         value = fat,
                         onValueChange = { fat = it },
-                        label = { Text("Жиры") },
+                        label = { Text("Ж, г") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = dialogFieldColors(),
@@ -240,7 +243,7 @@ private fun AddFoodEntryDialog(
                     OutlinedTextField(
                         value = carbs,
                         onValueChange = { carbs = it },
-                        label = { Text("Углеводы") },
+                        label = { Text("У, г") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = dialogFieldColors(),

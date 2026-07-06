@@ -12,6 +12,10 @@ import com.ddeeaaddllyy.zenith.domain.model.Goal
 import com.ddeeaaddllyy.zenith.domain.model.UserProfile
 import com.ddeeaaddllyy.zenith.domain.repository.UserRepository
 import com.ddeeaaddllyy.zenith.domain.usecase.CalculateCalorieTargetUseCase
+import com.ddeeaaddllyy.zenith.ui.common.AGE_MAX_LENGTH
+import com.ddeeaaddllyy.zenith.ui.common.HEIGHT_MAX_LENGTH
+import com.ddeeaaddllyy.zenith.ui.common.NAME_MAX_LENGTH
+import com.ddeeaaddllyy.zenith.ui.common.WEIGHT_MAX_LENGTH
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,12 +49,12 @@ class OnboardingViewModel(
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
-    fun onNameChange(value: String) = _uiState.update { it.copy(name = value) }
+    fun onNameChange(value: String) = _uiState.update { it.copy(name = value.take(NAME_MAX_LENGTH)) }
     fun onGenderChange(value: Gender) = _uiState.update { it.copy(gender = value) }
-    fun onAgeChange(value: String) = _uiState.update { it.copy(age = value.filter { c -> c.isDigit() }) }
-    fun onHeightChange(value: String) = _uiState.update { it.copy(heightCm = value.filter { c -> c.isDigit() }) }
-    fun onWeightChange(value: String) = _uiState.update { it.copy(weightKg = value.filterDecimal()) }
-    fun onTargetWeightChange(value: String) = _uiState.update { it.copy(targetWeightKg = value.filterDecimal()) }
+    fun onAgeChange(value: String) = _uiState.update { it.copy(age = value.filter { c -> c.isDigit() }.take(AGE_MAX_LENGTH)) }
+    fun onHeightChange(value: String) = _uiState.update { it.copy(heightCm = value.filter { c -> c.isDigit() }.take(HEIGHT_MAX_LENGTH)) }
+    fun onWeightChange(value: String) = _uiState.update { it.copy(weightKg = value.filterDecimal().take(WEIGHT_MAX_LENGTH)) }
+    fun onTargetWeightChange(value: String) = _uiState.update { it.copy(targetWeightKg = value.filterDecimal().take(WEIGHT_MAX_LENGTH)) }
     fun onActivityLevelChange(value: ActivityLevel) = _uiState.update { it.copy(activityLevel = value) }
     fun onGoalChange(value: Goal) = _uiState.update { it.copy(goal = value) }
 

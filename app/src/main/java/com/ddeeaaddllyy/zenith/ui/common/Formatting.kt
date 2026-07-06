@@ -11,6 +11,11 @@ import kotlin.math.roundToInt
 private val dayMonthFormatter = DateTimeFormatter.ofPattern("d MMMM", Locale("ru"))
 private val monthShortFormatter = DateTimeFormatter.ofPattern("LLL", Locale("ru"))
 
+const val NAME_MAX_LENGTH = 25
+const val AGE_MAX_LENGTH = 3
+const val HEIGHT_MAX_LENGTH = 3
+const val WEIGHT_MAX_LENGTH = 6
+
 fun LocalDate.toFriendlyLabel(): String {
     val today = LocalDate.now()
     return when (this) {

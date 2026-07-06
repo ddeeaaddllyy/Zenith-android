@@ -165,7 +165,7 @@ fun OnboardingScreen(
                                 inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        ) { Text(goal.label, style = MaterialTheme.typography.labelSmall) }
+                        ) { Text(goal.shortLabel, style = MaterialTheme.typography.labelSmall, maxLines = 1) }
                     }
                 }
             }

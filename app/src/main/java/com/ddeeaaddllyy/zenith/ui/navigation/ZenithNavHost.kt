@@ -1,5 +1,7 @@
 package com.ddeeaaddllyy.zenith.ui.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,6 +15,8 @@ import com.ddeeaaddllyy.zenith.ui.profile.ProfileScreen
 import com.ddeeaaddllyy.zenith.ui.profile.ProfileViewModel
 import com.ddeeaaddllyy.zenith.ui.statistics.StatisticsScreen
 import com.ddeeaaddllyy.zenith.ui.statistics.StatisticsViewModel
+import com.ddeeaaddllyy.zenith.ui.steps.StepsScreen
+import com.ddeeaaddllyy.zenith.ui.steps.StepsViewModel
 import com.ddeeaaddllyy.zenith.ui.workout.WorkoutScreen
 import com.ddeeaaddllyy.zenith.ui.workout.WorkoutViewModel
 
@@ -25,7 +29,9 @@ fun ZenithNavHost(
     NavHost(
         navController = navController,
         startDestination = ZenithDestination.STATISTICS.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(220)) },
+        exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(220)) }
     ) {
         composable(ZenithDestination.STATISTICS.route) {
             val viewModel: StatisticsViewModel = viewModel(factory = StatisticsViewModel.factory(container))
@@ -38,6 +44,10 @@ fun ZenithNavHost(
         composable(ZenithDestination.WORKOUT.route) {
             val viewModel: WorkoutViewModel = viewModel(factory = WorkoutViewModel.factory(container))
             WorkoutScreen(viewModel)
+        }
+        composable(ZenithDestination.STEPS.route) {
+            val viewModel: StepsViewModel = viewModel(factory = StepsViewModel.factory(container))
+            StepsScreen(viewModel)
         }
         composable(ZenithDestination.PROFILE.route) {
             val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.factory(container))

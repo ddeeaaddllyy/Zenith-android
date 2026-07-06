@@ -3,6 +3,7 @@ package com.ddeeaaddllyy.zenith.data.repository
 import com.ddeeaaddllyy.zenith.data.local.dao.UserProfileDao
 import com.ddeeaaddllyy.zenith.data.local.entity.UserProfileEntity
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
+import com.ddeeaaddllyy.zenith.domain.model.AppTheme
 import com.ddeeaaddllyy.zenith.domain.model.Gender
 import com.ddeeaaddllyy.zenith.domain.model.Goal
 import com.ddeeaaddllyy.zenith.domain.model.UserProfile
@@ -19,6 +20,10 @@ class UserRepositoryImpl(private val dao: UserProfileDao) : UserRepository {
         dao.upsert(profile.toEntity())
     }
 
+    override suspend fun updateTheme(theme: AppTheme) {
+        dao.updateTheme(theme.name)
+    }
+
     private fun UserProfileEntity.toDomain() = UserProfile(
         name = name,
         gender = Gender.valueOf(gender),
@@ -29,7 +34,8 @@ class UserRepositoryImpl(private val dao: UserProfileDao) : UserRepository {
         targetWeightKg = targetWeightKg,
         activityLevel = ActivityLevel.valueOf(activityLevel),
         goal = Goal.valueOf(goal),
-        dailyCalorieTarget = dailyCalorieTarget
+        dailyCalorieTarget = dailyCalorieTarget,
+        theme = runCatching { AppTheme.valueOf(theme) }.getOrDefault(AppTheme.CHOCOLATTE)
     )
 
     private fun UserProfile.toEntity() = UserProfileEntity(
@@ -42,6 +48,7 @@ class UserRepositoryImpl(private val dao: UserProfileDao) : UserRepository {
         targetWeightKg = targetWeightKg,
         activityLevel = activityLevel.name,
         goal = goal.name,
-        dailyCalorieTarget = dailyCalorieTarget
+        dailyCalorieTarget = dailyCalorieTarget,
+        theme = theme.name
     )
 }
