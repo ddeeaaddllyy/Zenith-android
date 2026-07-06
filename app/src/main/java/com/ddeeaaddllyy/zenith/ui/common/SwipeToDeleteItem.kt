@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.ddeeaaddllyy.zenith.ui.theme.AlertRed
+import com.ddeeaaddllyy.zenith.ui.theme.OnAlertRed
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,14 +59,14 @@ fun SwipeToDeleteItem(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.tertiary)
+                    .background(AlertRed)
                     .padding(horizontal = 24.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
                     imageVector = Icons.Filled.DeleteSweep,
                     contentDescription = "Удалить",
-                    tint = MaterialTheme.colorScheme.onTertiary
+                    tint = OnAlertRed
                 )
             }
         },

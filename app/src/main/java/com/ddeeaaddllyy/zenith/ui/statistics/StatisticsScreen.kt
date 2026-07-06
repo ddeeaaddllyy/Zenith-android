@@ -1,5 +1,7 @@
 package com.ddeeaaddllyy.zenith.ui.statistics
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,8 +30,6 @@ import com.ddeeaaddllyy.zenith.ui.common.formatWeight
 import com.ddeeaaddllyy.zenith.ui.common.formatWeightDelta
 import com.ddeeaaddllyy.zenith.ui.common.monthShortLabel
 import com.ddeeaaddllyy.zenith.ui.common.weekdayShort
-import com.ddeeaaddllyy.zenith.ui.theme.AmberAccent
-import com.ddeeaaddllyy.zenith.ui.theme.AmberAccentContainer
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel) {
@@ -102,9 +102,10 @@ private fun TodayCaloriesCard(state: StatisticsUiState) {
                 color = if (state.caloriesRemaining >= 0) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
             )
         }
-        val progress = if (state.calorieTarget > 0) {
+        val targetProgress = if (state.calorieTarget > 0) {
             (state.caloriesToday.toFloat() / state.calorieTarget).coerceIn(0f, 1f)
         } else 0f
+        val progress by animateFloatAsState(targetProgress, tween(500), label = "statsProgress")
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier
@@ -156,22 +157,22 @@ private fun WeekCard(state: StatisticsUiState) {
 
 @Composable
 private fun MonthlyWorkoutsCard(state: StatisticsUiState) {
-    ZenithCard(containerColor = AmberAccentContainer) {
-        SectionLabel("Тренировки по месяцам", color = AmberAccent)
+    ZenithCard(containerColor = MaterialTheme.colorScheme.tertiaryContainer) {
+        SectionLabel("Тренировки по месяцам", color = MaterialTheme.colorScheme.onTertiaryContainer)
         val totalCount = state.monthlyWorkoutStats.sumOf { it.count }
         Text(
             text = "$totalCount за ${state.monthlyWorkoutStats.size} мес.",
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
-            color = AmberAccent
+            color = MaterialTheme.colorScheme.onTertiaryContainer
         )
-        MonthlyWorkoutsChart(data = state.monthlyWorkoutStats, barColor = AmberAccent)
+        MonthlyWorkoutsChart(data = state.monthlyWorkoutStats, barColor = MaterialTheme.colorScheme.tertiary)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             state.monthlyWorkoutStats.forEach { month ->
                 Text(
                     text = month.month.monthShortLabel(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                 )
             }
         }
