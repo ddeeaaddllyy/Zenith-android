@@ -18,7 +18,7 @@ class StepsViewModel(private val stepsRepository: StepsRepository) : ViewModel()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     companion object {
-        const val DAILY_GOAL = 10_000
+        const val DAILY_GOAL = 7_000
 
         fun factory(container: AppContainer) = viewModelFactory {
             initializer { StepsViewModel(container.stepsRepository) }
