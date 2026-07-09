@@ -1,5 +1,6 @@
 package com.ddeeaaddllyy.zenith.domain.repository
 
+import com.ddeeaaddllyy.zenith.domain.model.LoginResult
 import com.ddeeaaddllyy.zenith.domain.model.NedovolenSession
 import kotlinx.coroutines.flow.Flow
 
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface NedovolenAccountRepository {
     val session: Flow<NedovolenSession?>
-    suspend fun login(login: String)
+    suspend fun register(login: String, password: String)
+    suspend fun login(login: String, password: String): LoginResult
     suspend fun logout()
 }

@@ -52,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
@@ -77,7 +76,8 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
     val session by viewModel.session.collectAsState()
     var showWeightDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var showLoginDialog by remember { mutableStateOf(false) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+    var authMode by remember { mutableStateOf<NedovolenAuthMode?>(null) }
 
     Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         val currentProfile = profile
@@ -96,8 +96,9 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                 item {
                     NedovolenAccountCard(
                         session = session,
-                        onLoginClick = { showLoginDialog = true },
-                        onLogoutClick = viewModel::logout
+                        onRegisterClick = { authMode = NedovolenAuthMode.REGISTER },
+                        onLoginClick = { authMode = NedovolenAuthMode.LOGIN },
+                        onLogoutClick = { showLogoutConfirm = true }
                     )
                 }
                 item { WeightCard(currentProfile, onUpdateWeightClick = { showWeightDialog = true }) }
@@ -133,15 +134,23 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
         )
     }
 
-    if (showLoginDialog) {
-        NedovolenLoginDialog(
-            onDismiss = { showLoginDialog = false },
-            onConfirm = { login ->
-                viewModel.login(login)
-                showLoginDialog = false
+    if (showLogoutConfirm) {
+        LogoutConfirmDialog(
+            login = session?.login,
+            onDismiss = { showLogoutConfirm = false },
+            onConfirm = {
+                viewModel.logout()
+                showLogoutConfirm = false
             }
         )
     }
+
+    NedovolenAuthOverlay(
+        mode = authMode,
+        onRegister = viewModel::register,
+        onLogin = viewModel::login,
+        onDismissRequest = { authMode = null }
+    )
 }
 
 @Composable
@@ -200,6 +209,7 @@ private fun UserInfoCard(profile: UserProfile, onEditClick: () -> Unit) {
 @Composable
 private fun NedovolenAccountCard(
     session: NedovolenSession?,
+    onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -226,7 +236,7 @@ private fun NedovolenAccountCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = if (session != null) "Единый аккаунт всех приложений" else "Войдите, чтобы не потерять прогресс",
+                        text = if (session != null) "Единый аккаунт всех приложений" else "Создайте аккаунт или войдите в существующий",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -243,60 +253,50 @@ private fun NedovolenAccountCard(
             }
         } else {
             Button(
-                onClick = onLoginClick,
+                onClick = onRegisterClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Войти в Nedovolen")
+                Text("Зарегистрироваться")
+            }
+            OutlinedButton(
+                onClick = onLoginClick,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("У меня уже есть аккаунт")
             }
         }
     }
 }
 
 @Composable
-private fun NedovolenLoginDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    var login by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
+private fun LogoutConfirmDialog(
+    login: String?,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = { Text("Вход в Nedovolen", color = MaterialTheme.colorScheme.onSurface) },
+        title = { Text("Выйти из аккаунта?", color = MaterialTheme.colorScheme.onSurface) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    "Единая учётная запись для всех приложений разработчика. Сейчас вход сохраняется только на этом устройстве.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedTextField(
-                    value = login,
-                    onValueChange = { login = it },
-                    label = { Text("Логин") },
-                    singleLine = true,
-                    colors = dialogFieldColors(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Пароль") },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    colors = dialogFieldColors(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            Text(
+                text = if (login != null) {
+                    "Вы выйдете из аккаунта «$login». Прогресс перестанет сохраняться в Nedovolen, пока вы не войдёте снова."
+                } else {
+                    "Прогресс перестанет сохраняться в Nedovolen, пока вы не войдёте снова."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm(login.trim()) },
-                enabled = login.isNotBlank() && password.isNotBlank()
-            ) {
-                Text("Войти", color = MaterialTheme.colorScheme.primary)
+            TextButton(onClick = onConfirm) {
+                Text("Выйти", color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {

@@ -44,3 +44,6 @@ val OnAlertRed = Color(0xFFFFFFFF)
 // Fixed across every theme — the "not signed in" notice reads as a quiet, dark red, not an alarm.
 val NoticeDarkRed = Color(0xFF4A1616)
 val OnNoticeDarkRed = Color(0xFFE8C9C9)
+
+// Fixed across every theme — the registration success glow always reads as green.
+val SuccessGreen = Color(0xFF3DDC84)

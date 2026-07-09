@@ -24,7 +24,7 @@ import com.ddeeaaddllyy.zenith.data.local.entity.WorkoutEntryEntity
         NedovolenAccountEntity::class,
         StepsBaselineEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class ZenithDatabase : RoomDatabase() {

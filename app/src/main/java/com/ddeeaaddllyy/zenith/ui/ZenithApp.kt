@@ -35,7 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -134,7 +136,9 @@ private fun MainScaffold(container: AppContainer) {
                             Text(
                                 destination.label,
                                 maxLines = 1,
-                                style = MaterialTheme.typography.labelSmall
+                                softWrap = false,
+                                overflow = TextOverflow.Visible,
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp)
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(

@@ -8,6 +8,7 @@ import com.ddeeaaddllyy.zenith.di.AppContainer
 import com.ddeeaaddllyy.zenith.domain.model.ActivityLevel
 import com.ddeeaaddllyy.zenith.domain.model.AppTheme
 import com.ddeeaaddllyy.zenith.domain.model.Goal
+import com.ddeeaaddllyy.zenith.domain.model.LoginResult
 import com.ddeeaaddllyy.zenith.domain.model.NedovolenSession
 import com.ddeeaaddllyy.zenith.domain.model.UserProfile
 import com.ddeeaaddllyy.zenith.domain.model.WeightEntry
@@ -88,8 +89,17 @@ class ProfileViewModel(
         viewModelScope.launch { userRepository.updateTheme(theme) }
     }
 
-    fun login(login: String) {
-        viewModelScope.launch { nedovolenAccountRepository.login(login) }
+    fun register(login: String, password: String, onDone: () -> Unit) {
+        viewModelScope.launch {
+            nedovolenAccountRepository.register(login, password)
+            onDone()
+        }
+    }
+
+    fun login(login: String, password: String, onResult: (LoginResult) -> Unit) {
+        viewModelScope.launch {
+            onResult(nedovolenAccountRepository.login(login, password))
+        }
     }
 
     fun logout() {

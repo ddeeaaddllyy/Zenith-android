@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey
 data class NedovolenAccountEntity(
     @PrimaryKey val id: Int = 1,
     val login: String,
+    val passwordHash: String,
+    val passwordSalt: String,
     val isLoggedIn: Boolean,
     val loggedInAt: Long
 )
